@@ -1,6 +1,8 @@
 package com.example.marketrisk.service;
 
 import com.example.marketrisk.model.MarketData;
+import com.example.marketrisk.model.dto.MarketDataRequest;
+import com.example.marketrisk.model.dto.MarketDataResponse;
 import jakarta.annotation.PreDestroy;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,17 +39,18 @@ public class MarketDataProducerService {
     @Getter
     private boolean running = false;
 
-    // Track last prices for volatility simulation
-    private final Map<String, BigDecimal> lastPrices = new HashMap<>();
-
     // Symbol list for simulation
     private final String[] symbols = {"SYM1", "SYM2", "SYM3", "SYM4", "SYM5"};
 
+    // Track last prices for volatility simulation
+    private final Map<String, BigDecimal> lastPrices = new HashMap<>(){{
+        for (String s : symbols) {
+            put(s, BigDecimal.ZERO);
+        }
+    }};
+
     public MarketDataProducerService(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
-        for (String s : symbols) {
-            lastPrices.put(s, BigDecimal.valueOf(100 + random.nextDouble() * 10));
-        }
     }
 
     /**
@@ -136,9 +139,11 @@ public class MarketDataProducerService {
     /**
      * Inject a single manual tick
      */
-    public MarketData injectManual(MarketData tick) {
-        kafkaTemplate.send(marketDataRealtimeTopic, tick);
-        kafkaTemplate.send(marketDataRealtimeSaveTopic, tick);
-        return tick;
+    public MarketDataResponse injectManual(MarketDataRequest request) {
+        MarketData tick = MarketData.fromRequest(request);
+
+        kafkaTemplate.send(marketDataRealtimeTopic, tick.getSymbol(), tick);
+        kafkaTemplate.send(marketDataRealtimeSaveTopic, tick.getSymbol(), tick);
+        return tick.toResponse();
     }
 }

@@ -29,11 +29,17 @@ spring:
     bootstrap-servers: localhost:9092
     streams:
       application-id: market-risk-stream
+      auto-startup: true
       num-stream-threads: 6         # match number of partitions for parallelism
-      state-dir: /tmp/kafka-streams
       properties:
+        processing.guarantee: at_least_once
         default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
-        default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.springframework.kafka.support.serializer.JsonSerde
+        spring.json.trusted.packages: "*"
+        auto.offset.reset: earliest            # 🔥 ensures reading existing data
+        commit.interval.ms: 500
+        cache.max.bytes.buffering: 0
+        state.dir: /tmp/kafka-streams/market-risk   # required on Windows
     consumer:
       group-id: market-risk-consumer
       auto-offset-reset: earliest

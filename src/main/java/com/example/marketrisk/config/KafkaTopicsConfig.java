@@ -24,7 +24,7 @@ public class KafkaTopicsConfig {
     private String riskMetricsTopic;
 
     @Value("${app.kafka.topics.risk-metrics-save}")
-    private String riskMetricsetricsSaveTopic;
+    private String riskMetricsSaveTopic;
 
     @Value("${app.kafka.topics.risk-alerts}")
     private String riskAlertsTopic;
@@ -57,7 +57,7 @@ public class KafkaTopicsConfig {
 
     @Bean
     public NewTopic riskCalculationsSaveTopic() {
-        return new NewTopic(riskMetricsetricsSaveTopic, 1, (short) 1);
+        return new NewTopic(riskMetricsSaveTopic, 1, (short) 1);
     }
 
     @Bean

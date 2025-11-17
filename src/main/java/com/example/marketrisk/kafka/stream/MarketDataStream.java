@@ -6,16 +6,17 @@ import com.example.marketrisk.model.EnrichedMarketData;
 import com.example.marketrisk.model.MarketData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Produced;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 @Slf4j
-@Component
-public class MarketDataEnrichStream {
+@Configuration
+public class MarketDataStream {
 
     @Value("${app.kafka.topics.market-data-realtime}")
     private String marketDataRealtimeTopic;
@@ -26,16 +27,25 @@ public class MarketDataEnrichStream {
     @Value("${app.kafka.topics.market-data-enriched-save}")
     private String marketDataEnrichedSaveTopic;
 
-    // Read from market-data-realtime topic, enrich data, then forward
     @Bean
-    public KStream<String, EnrichedMarketData> enrichmentPipeline(StreamsBuilder builder, EnrichProcessor processor) {
-        KStream<String, MarketData> inputStream = builder.stream(marketDataRealtimeTopic);
+    public KStream<String, MarketData> enrichmentPipeline(
+            StreamsBuilder builder,
+            EnrichProcessor processor
+    ) {
 
-        KStream<String, EnrichedMarketData> enriched = inputStream.mapValues(processor::enrich);
+        KStream<String, MarketData> input = builder.stream(marketDataRealtimeTopic);
 
-        enriched.to(marketDataEnrichedTopic, Produced.with(Serdes.String(), JsonSerdes.enrichedMarketData()));
-        enriched.to(marketDataEnrichedSaveTopic, Produced.with(Serdes.String(), JsonSerdes.enrichedMarketData()));
+        input.peek((k, v) -> log.info("STREAM READ MarketData = {}", v));
 
-        return enriched;
+        KStream<String, EnrichedMarketData> enriched =
+                input.mapValues(processor::enrich);
+
+        enriched.peek((k, v) -> log.info("STREAM ENRICHED OUTPUT = {}", v));
+
+        enriched.to(marketDataEnrichedTopic);
+        enriched.to(marketDataEnrichedSaveTopic);
+
+        return input;
     }
 }
+

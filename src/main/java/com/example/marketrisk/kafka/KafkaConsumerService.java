@@ -24,7 +24,7 @@ public class KafkaConsumerService {
             topics = "${app.kafka.topics.market-data-realtime-save}",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void save(MarketData data) {
+    public void saveMarketData(MarketData data) {
         try {
             marketDataRepository.save(data.toEntity());
         } catch (Exception e) {
@@ -36,7 +36,7 @@ public class KafkaConsumerService {
             topics = "${app.kafka.topics.market-data-enriched-save}",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void save(EnrichedMarketData data) {
+    public void saveEnrichedMarketData(EnrichedMarketData data) {
         try {
             enrichedMarketDataRepository.save(data.toEntity());
         } catch (Exception e) {
@@ -48,7 +48,7 @@ public class KafkaConsumerService {
             topics = "${app.kafka.topics.risk-metrics-save}",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void save(RiskMetric data) {
+    public void saveRiskMetrics(RiskMetric data) {
         try {
             riskMetricRepository.save(data.toEntity());
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class KafkaConsumerService {
                     "value.deserializer=org.apache.kafka.common.serialization.StringDeserializer"
             }
     )
-    public void alert(String data) {
+    public void onAlert(String data) {
         System.out.println("#################### Demo risk alert: " + data + " ####################");
     }
 }

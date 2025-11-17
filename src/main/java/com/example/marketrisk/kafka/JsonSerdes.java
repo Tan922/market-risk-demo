@@ -1,48 +1,36 @@
 package com.example.marketrisk.kafka;
 
-import com.example.marketrisk.model.AlertEvent;
-import com.example.marketrisk.model.EnrichedMarketData;
-import com.example.marketrisk.model.MarketData;
-import com.example.marketrisk.model.RiskMetric;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.apache.kafka.common.serialization.Deserializer;
+import com.example.marketrisk.model.*;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.serialization.Serializer;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 public class JsonSerdes {
-    private static final ObjectMapper mapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())        // support Java time types
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-    // --------------------------------------------------------------------------------------------
-    // Generic factory methods
-    // --------------------------------------------------------------------------------------------
-    public static <T> Serde<T> serdeFor(Class<T> clazz) {
-        Serializer<T> serializer = new JsonPOJOSerializer<>(mapper);
-        Deserializer<T> deserializer = new JsonPOJODeserializer<>(mapper, clazz);
+    private static <T> Serde<T> buildSerde(Class<T> clazz) {
+        JsonSerializer<T> serializer = new JsonSerializer<>();
+
+        JsonDeserializer<T> deserializer = new JsonDeserializer<>(clazz);
+        deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeMapperForKey(true);
+
         return Serdes.serdeFrom(serializer, deserializer);
     }
 
-    // --------------------------------------------------------------------------------------------
-    // Type-specific convenience Serdes
-    // --------------------------------------------------------------------------------------------
     public static Serde<MarketData> marketData() {
-        return serdeFor(MarketData.class);
+        return buildSerde(MarketData.class);
     }
 
     public static Serde<EnrichedMarketData> enrichedMarketData() {
-        return serdeFor(EnrichedMarketData.class);
+        return buildSerde(EnrichedMarketData.class);
     }
 
     public static Serde<RiskMetric> riskMetrics() {
-        return serdeFor(RiskMetric.class);
+        return buildSerde(RiskMetric.class);
     }
 
     public static Serde<AlertEvent> riskAlert() {
-        return serdeFor(AlertEvent.class);
+        return buildSerde(AlertEvent.class);
     }
-
 }

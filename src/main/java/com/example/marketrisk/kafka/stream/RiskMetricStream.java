@@ -6,15 +6,16 @@ import com.example.marketrisk.model.EnrichedMarketData;
 import com.example.marketrisk.model.RiskMetric;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Produced;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Configuration;
 
 @Slf4j
-@Component
+@Configuration
 public class RiskMetricStream {
 
     @Value("${app.kafka.topics.market-data-enriched}")
@@ -24,20 +25,26 @@ public class RiskMetricStream {
     private String riskMetricsTopic;
 
     @Value("${app.kafka.topics.risk-metrics-save}")
-    private String riskMetricsetricsSaveTopic;
+    private String riskMetricsSaveTopic;
 
     // Read from market-data-enriched topic, calculate risk metrics, then forward
     @Bean
-    public KStream<String, RiskMetric> enrichmentPipeline(StreamsBuilder builder, RiskMetricCalculationProcessor processor) {
+    public KStream<String, RiskMetric> riskMetricPipeline(
+            StreamsBuilder builder,
+            RiskMetricCalculationProcessor processor
+    ) {
+        KStream<String, EnrichedMarketData> input = builder.stream(marketDataEnrichedTopic);
 
-        KStream<String, EnrichedMarketData> inputStream = builder.stream(marketDataEnrichedTopic);
+        input.peek((k, v) -> log.info("STREAM READ Enriched = {}", v));
 
-        KStream<String, RiskMetric> metrics = inputStream.mapValues(processor::computeRisk);
+        KStream<String, RiskMetric> out =
+                input.mapValues(processor::computeRisk);
 
-        metrics.to(riskMetricsTopic, Produced.with(Serdes.String(), JsonSerdes.riskMetrics()));
-        metrics.to(riskMetricsetricsSaveTopic, Produced.with(Serdes.String(), JsonSerdes.riskMetrics()));
+        out.peek((k, v) -> log.info("RISK METRIC OUTPUT = {}", v));
 
-        return metrics;
+        out.to(riskMetricsTopic);
+        out.to(riskMetricsSaveTopic);
 
+        return out;
     }
 }

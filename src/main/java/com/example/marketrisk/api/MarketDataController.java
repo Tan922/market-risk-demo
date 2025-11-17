@@ -1,6 +1,8 @@
 package com.example.marketrisk.api;
 
 import com.example.marketrisk.model.MarketData;
+import com.example.marketrisk.model.dto.MarketDataRequest;
+import com.example.marketrisk.model.dto.MarketDataResponse;
 import com.example.marketrisk.service.MarketDataProducerService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +39,7 @@ public class MarketDataController {
 
     @Operation(summary = "Inject a manual market tick (debug/demo)")
     @PostMapping("/inject")
-    public MarketData inject(@RequestBody MarketData dto) {
-        return producerService.injectManual(dto);
+    public MarketDataResponse inject(@RequestBody MarketDataRequest request) {
+        return producerService.injectManual(request);
     }
 }
