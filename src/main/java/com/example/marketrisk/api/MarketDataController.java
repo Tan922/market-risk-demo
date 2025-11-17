@@ -1,6 +1,5 @@
 package com.example.marketrisk.api;
 
-import com.example.marketrisk.model.MarketData;
 import com.example.marketrisk.model.dto.MarketDataRequest;
 import com.example.marketrisk.model.dto.MarketDataResponse;
 import com.example.marketrisk.service.MarketDataProducerService;

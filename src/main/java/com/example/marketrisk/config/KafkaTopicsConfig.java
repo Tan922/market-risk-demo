@@ -11,9 +11,6 @@ public class KafkaTopicsConfig {
     @Value("${app.kafka.topics.market-data-realtime}")
     private String marketDataRealtimeTopic;
 
-    @Value("${app.kafka.topics.market-data-realtime-save}")
-    private String marketDataRealtimeSaveTopic;
-
     @Value("${app.kafka.topics.market-data-enriched}")
     private String marketDataEnrichedTopic;
 
@@ -33,11 +30,6 @@ public class KafkaTopicsConfig {
     @Bean
     public NewTopic marketdataRealtimeTopic() {
         return new NewTopic(marketDataRealtimeTopic, 6, (short) 1); // 6 partitions
-    }
-
-    @Bean
-    public NewTopic marketdataRealtimeSaveTopic() {
-        return new NewTopic(marketDataRealtimeSaveTopic, 6, (short) 1); // 6 partitions
     }
 
     @Bean

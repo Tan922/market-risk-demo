@@ -6,9 +6,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Entity
 @Getter
 @Setter
+@Entity
 @Table(name = "market_data")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class MarketDataEntity {

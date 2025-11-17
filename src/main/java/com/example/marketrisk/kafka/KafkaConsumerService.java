@@ -21,18 +21,6 @@ public class KafkaConsumerService {
     private final RiskMetricRepository riskMetricRepository;
 
     @KafkaListener(
-            topics = "${app.kafka.topics.market-data-realtime-save}",
-            groupId = "${spring.kafka.consumer.group-id}"
-    )
-    public void saveMarketData(MarketData data) {
-        try {
-            marketDataRepository.save(data.toEntity());
-        } catch (Exception e) {
-            log.error("Error processing Kafka message", e);
-        }
-    }
-
-    @KafkaListener(
             topics = "${app.kafka.topics.market-data-enriched-save}",
             groupId = "${spring.kafka.consumer.group-id}"
     )

@@ -64,7 +64,6 @@ app:
   kafka:
     topics:
       market-data-realtime: marketdata.realtime
-      market-data-realtime-save: marketdata.realtime.save
       market-data-enriched: marketdata.enriched
       market-data-enriched-save: marketdata.enriched.save
       risk-metrics: risk.metrics

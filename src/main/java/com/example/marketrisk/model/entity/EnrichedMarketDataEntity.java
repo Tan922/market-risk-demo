@@ -7,9 +7,9 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Entity
 @Getter
 @Setter
+@Entity
 @Table(name = "enriched_market_data")
 public class EnrichedMarketDataEntity extends MarketDataEntity {
 

@@ -15,12 +15,8 @@ public class KafkaProducerService {
     @Value("${app.kafka.topics.market-data-realtime}")
     private String marketDataRealtimeTopic;
 
-    @Value("${app.kafka.topics.market-data-realtime-save}")
-    private String marketDataRealtimeSaveTopic;
-
     public void publish(MarketData data) {
         template.send(marketDataRealtimeTopic, data.getSymbol(), data);
-        template.send(marketDataRealtimeSaveTopic, data.getSymbol(), data);
     }
 
 }
