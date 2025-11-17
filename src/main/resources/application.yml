@@ -1,0 +1,79 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: market-risk-demo
+  boot:
+    admin:
+      client:
+        url: http://localhost:8081
+        instance:
+          service-base-url: http://localhost:8080
+          management-base-url: http://localhost:8080
+  datasource:
+    url: jdbc:postgresql://localhost:5432/market_risk
+    username: demo
+    password: demo
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  sql:
+    init:
+      mode: never
+  main:
+    allow-bean-definition-overriding: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    streams:
+      application-id: market-risk-stream
+      num-stream-threads: 6         # match number of partitions for parallelism
+      state-dir: /tmp/kafka-streams
+      properties:
+        default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+        default.value.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+    consumer:
+      group-id: market-risk-consumer
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.value.default.type: com.example.marketrisk.model.MarketData
+        spring.json.trusted.packages: com.example.marketrisk.*
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties.spring.json.value.default.type: com.example.marketrisk.model.MarketData
+      batch-size: 32768 # 32 KB, larger batches = better throughput
+      linger-ms: 5 # wait up to 5 ms before sending batch
+      compression-type: snappy # use snappy compression for better performance, reduces network traffic
+    template:
+      default-topic: marketdata.realtime
+
+# Application Kafka topics
+app:
+  kafka:
+    topics:
+      market-data-realtime: marketdata.realtime
+      market-data-realtime-save: marketdata.realtime.save
+      market-data-enriched: marketdata.enriched
+      market-data-enriched-save: marketdata.enriched.save
+      risk-metrics: risk.metrics
+      risk-metrics-save: risk.metrics.save
+      risk-alerts: risk.alerts
+
+logging:
+  level:
+    root: INFO
+
+management:
+  info:
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
