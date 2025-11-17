@@ -11,10 +11,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class AppConfig {
 
-    @Value("${ai.base-url}")
+    @Value("${ai.api.base-url}")
     private String url;
 
-    @Value("${ai.key}")
+    @Value("${ai.api.key}")
     private String key;
 
     @Bean

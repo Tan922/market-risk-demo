@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AIController {
 
-    private final AiService aiInsightService;
+    private final AiService aiService;
 
     @Operation(summary = "Generate AI-driven risk insights (agentic)")
     @PostMapping("/insights")
     public String insights(@RequestBody String request) {
-        return aiInsightService.generateInsight(request);
+        return aiService.generateInsight(request);
     }
 }
