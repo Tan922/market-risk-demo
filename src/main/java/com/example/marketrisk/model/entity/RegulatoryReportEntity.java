@@ -19,6 +19,7 @@ public class RegulatoryReportEntity {
     private LocalDate reportDate;
     private String reportType;    // e.g. DAILY, MONTHLY
     private String content;       // JSON or summary text
-    private boolean exported;
+    private String name;
+    private long timestamp;      // Epoch time of report generation
 
 }

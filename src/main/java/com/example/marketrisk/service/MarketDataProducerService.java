@@ -25,8 +25,8 @@ public class MarketDataProducerService {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @Value("${app.kafka.topics.market-data-realtime}")
-    private String marketDataRealtimeTopic;
+    @Value("${app.kafka.topics.market-data-topic}")
+    private String marketDataTopic;
 
     private final Random random = new Random();
 
@@ -87,7 +87,7 @@ public class MarketDataProducerService {
     private void sendRandomTick() {
         try {
             MarketData tick = generateRandomTick();
-            kafkaTemplate.send(marketDataRealtimeTopic, tick);
+            kafkaTemplate.send(marketDataTopic, tick);
             // optional debug log, comment out for high throughput
             // log.debug("Sent tick: {}", tick);
         } catch (Exception e) {
@@ -138,7 +138,7 @@ public class MarketDataProducerService {
     public MarketDataResponse injectManual(MarketDataRequest request) {
         MarketData tick = MarketData.fromRequest(request);
 
-        kafkaTemplate.send(marketDataRealtimeTopic, tick.getSymbol(), tick);
+        kafkaTemplate.send(marketDataTopic, tick.getSymbol(), tick);
         return tick.toResponse();
     }
 }

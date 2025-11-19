@@ -6,27 +6,64 @@ ai:
 
   enabled: true
   timeout-ms: 15000
+  aggregate-by-symbol: true
+  max-records: 1000
+  max-retries: 3
+  retry-delay-ms: 2000
 
   temperature: 0.3
   max-new-tokens: 512
 
-  system-prompt: |
-    You are a financial risk analysis assistant. Your task is to help analyze market data and identify potential risks and breaches based on predefined criteria. Provide clear, concise, and accurate responses to queries related to market risk assessment.
-  market-data-prompt-template: |
-    Analyze the following market data and identify any potential risks or breaches:
+  prompts:
+    general-summary: |
+      You are a financial risk analyst. Given the following market risk data, provide a concise summary highlighting:
+      - Key risk exposures
+      - Unusual movements or anomalies
+      - Recommendations or warnings if thresholds are exceeded
+      
+      Data:
+      {risk_data}
+      
+      Format your response as:
+      - Summary: [brief high-level overview]
+      - Alerts: [list of critical alerts if any]
+      - Observations: [notable patterns or changes]
+      - Recommendations: [actions or suggestions for risk management]
 
-    Market Data:
-    symbol: {{symbol}}
-    price: {{price}}
-    volume: {{volume}}
+    risk-heatmap: |
+      You are an expert in market risk monitoring. Analyze the following data and highlight sectors or instruments with the highest risk exposure. Use a "risk heatmap style" summary showing severity levels:
+      
+      Data:
+      {risk_data}
+      
+      Response format:
+      - High Risk: [list symbols or metrics]
+      - Medium Risk: [list symbols or metrics]
+      - Low Risk: [list symbols or metrics]
+      - Recommended Actions: [specific mitigations]
 
-    Provide a detailed analysis and highlight any areas of concern.
-  breach-detection-prompt-template: |
-    Provide a short analysis (2-6 sentences) of the following market risk breach. Include: 
-    
-      1. A summary of the breach.
-      2. The potential impact on the market.
-      3. Recommended actions to mitigate the risk.
-    
-      Breach Details: 
-      {{breach_details}}
+    time-series: |
+      Analyze the risk metrics over time and identify trends, spikes, or anomalies. Include:
+      - Significant increases or decreases in risk scores
+      - Any unusual correlations
+      - Recommendations for monitoring
+      
+      Data:
+      {risk_data}
+      
+      Response format:
+      - Trend Summary: 
+      - Notable Spikes:
+      - Correlations:
+      - Recommendations:
+
+    var-analysis: |
+      Given the risk metrics, calculate or interpret Value-at-Risk (VaR) thresholds. Identify if any positions exceed safe limits and suggest mitigation actions.
+      
+      Data:
+      {risk_data}
+      
+      Response format:
+      - VaR Overview: 
+      - Positions Exceeding VaR:
+      - Recommendations:
