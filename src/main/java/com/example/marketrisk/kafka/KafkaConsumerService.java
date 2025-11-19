@@ -1,51 +1,33 @@
 package com.example.marketrisk.kafka;
 
-import com.example.marketrisk.model.MarketData;
-import com.example.marketrisk.model.RiskMetric;
-import com.example.marketrisk.repository.EnrichedMarketDataRepository;
-import com.example.marketrisk.repository.MarketDataRepository;
-import com.example.marketrisk.repository.RiskMetricRepository;
+import com.example.marketrisk.model.RegulatoryReport;
+import com.example.marketrisk.repository.RegulatoryReportRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import com.example.marketrisk.model.EnrichedMarketData;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class KafkaConsumerService {
 
-    private final MarketDataRepository marketDataRepository;
-    private final EnrichedMarketDataRepository enrichedMarketDataRepository;
-    private final RiskMetricRepository riskMetricRepository;
+    private final RegulatoryReportRepository regulatoryReportRepository;
 
     @KafkaListener(
-            topics = "${app.kafka.topics.market-data-enriched-save}",
+            topics = "${app.kafka.topics.regulatory-reporting-topic}",
             groupId = "${spring.kafka.consumer.group-id}"
     )
-    public void saveEnrichedMarketData(EnrichedMarketData data) {
+    public void generateAndSaveReport(RegulatoryReport data) {
         try {
-            enrichedMarketDataRepository.save(data.toEntity());
+            regulatoryReportRepository.save(data.toEntity());
         } catch (Exception e) {
             log.error("Error processing Kafka message", e);
         }
     }
 
     @KafkaListener(
-            topics = "${app.kafka.topics.risk-metrics-save}",
-            groupId = "${spring.kafka.consumer.group-id}"
-    )
-    public void saveRiskMetrics(RiskMetric data) {
-        try {
-            riskMetricRepository.save(data.toEntity());
-        } catch (Exception e) {
-            log.error("Error processing Kafka message", e);
-        }
-    }
-
-    @KafkaListener(
-            topics = "${app.kafka.topics.risk-alerts}",
+            topics = "${app.kafka.topics.market-risk-alert-topic}",
             groupId = "${spring.kafka.consumer.group-id}",
             properties = {
                     "value.deserializer=org.apache.kafka.common.serialization.StringDeserializer"

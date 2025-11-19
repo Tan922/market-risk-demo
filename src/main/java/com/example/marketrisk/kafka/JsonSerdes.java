@@ -1,36 +1,55 @@
 package com.example.marketrisk.kafka;
 
-import com.example.marketrisk.model.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.common.serialization.Deserializer;
+import org.apache.kafka.common.serialization.Serializer;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
-public class JsonSerdes {
+public final class JsonSerdes {
 
-    private static <T> Serde<T> buildSerde(Class<T> clazz) {
-        JsonSerializer<T> serializer = new JsonSerializer<>();
+    private static final ObjectMapper MAPPER = objectMapper();
 
-        JsonDeserializer<T> deserializer = new JsonDeserializer<>(clazz);
-        deserializer.addTrustedPackages("*");
-        deserializer.setUseTypeMapperForKey(true);
+    private JsonSerdes() {}
 
+    private static ObjectMapper objectMapper() {
+        ObjectMapper m = new ObjectMapper();
+        m.findAndRegisterModules(); // register JavaTimeModule, JDK8 modules etc.
+        m.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        m.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        return m;
+    }
+
+    public static <T> Serde<T> serdeFor(Class<T> clazz) {
+        Serializer<T> serializer = (topic, data) -> {
+            try {
+                return MAPPER.writeValueAsBytes(data);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+        Deserializer<T> deserializer = (topic, bytes) -> {
+            if (bytes == null || bytes.length == 0) return null;
+            try {
+                return MAPPER.readValue(bytes, clazz);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
         return Serdes.serdeFrom(serializer, deserializer);
     }
 
-    public static Serde<MarketData> marketData() {
-        return buildSerde(MarketData.class);
+    public static Serde<com.example.marketrisk.model.MarketData> marketData() {
+        return serdeFor(com.example.marketrisk.model.MarketData.class);
     }
 
-    public static Serde<EnrichedMarketData> enrichedMarketData() {
-        return buildSerde(EnrichedMarketData.class);
+    public static Serde<com.example.marketrisk.model.MarketRiskSnapshot> marketRiskSnapshot() {
+        return serdeFor(com.example.marketrisk.model.MarketRiskSnapshot.class);
     }
 
-    public static Serde<RiskMetric> riskMetrics() {
-        return buildSerde(RiskMetric.class);
-    }
-
-    public static Serde<AlertEvent> riskAlert() {
-        return buildSerde(AlertEvent.class);
+    public static Serde<com.example.marketrisk.model.AlertEvent> alertEvent() {
+        return serdeFor(com.example.marketrisk.model.AlertEvent.class);
     }
 }

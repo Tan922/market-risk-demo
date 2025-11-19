@@ -34,7 +34,7 @@ spring:
       properties:
         processing.guarantee: at_least_once
         default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
-        default.value.serde: org.springframework.kafka.support.serializer.JsonSerde
+        default.value.serde: org.apache.kafka.common.serialization.Serdes$ByteArraySerde
         spring.json.trusted.packages: "*"
         auto.offset.reset: earliest            # 🔥 ensures reading existing data
         commit.interval.ms: 500
@@ -63,16 +63,18 @@ spring:
 app:
   kafka:
     topics:
-      market-data-realtime: marketdata.realtime
-      market-data-enriched: marketdata.enriched
-      market-data-enriched-save: marketdata.enriched.save
-      risk-metrics: risk.metrics
-      risk-metrics-save: risk.metrics.save
-      risk-alerts: risk.alerts
+      market-data-topic: market-data
+      market-risk-snapshot-topic: market-risk-snapshot-out
+      market-risk-alert-topic: market-risk-alerts
+      regulatory-reporting-topic: regulatory-reporting
+    stores:
+      market-data-store: market-data-store
+      market-risk-snapshot-store: market-risk-snapshot-store
 
 logging:
   level:
     root: INFO
+    org.apache.kafka.streams: WARN
 
 management:
   info:
