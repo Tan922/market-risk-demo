@@ -23,7 +23,7 @@ public class MarketRiskSnapshotProcessor implements Transformer<String, MarketDa
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(org.apache.kafka.streams.processor.ProcessorContext context) {
+    public void init(ProcessorContext context) {
         this.context = context;
         this.store = (KeyValueStore<String, MarketData>) context.getStateStore(marketDataStoreName);
         log.warn("🔥 MarketRiskSnapshotProcessor INIT — store={} ", marketDataStoreName);

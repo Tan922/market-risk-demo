@@ -1,6 +1,9 @@
 package com.example.marketrisk.service;
 
 import com.example.marketrisk.model.MarketRiskSnapshot;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +23,7 @@ public class AiService {
 
     private final MarketRiskSnapshotService service;
     private final WebClient webClient;
+    private final ObjectMapper mapper;
     private final Environment env;  // to read prompt templates from application.yml
 
     @Value("${ai.api.model}")
@@ -76,7 +80,7 @@ public class AiService {
     }
 
     private String askAI(Map<String, Object> payload) {
-        return webClient.post()
+        String block = webClient.post()
                 .uri("/chat/completions")   // appended to base URL
                 .bodyValue(payload)
                 .retrieve()
@@ -88,6 +92,24 @@ public class AiService {
                 )
                 .bodyToMono(String.class)
                 .block();
+        return parseAIResponse(block);
+    }
+
+    private String parseAIResponse(String response) {
+        JsonNode root = null;
+        try {
+            root = mapper.readTree(response);
+        } catch (JsonProcessingException e) {
+            System.err.println(e.getMessage());
+            return "AI API error: " + e.getMessage();
+        }
+
+        // Navigate to choices[0].message.content
+        return root.path("choices")
+                .get(0)
+                .path("message")
+                .path("content")
+                .asText();
     }
 
 }

@@ -4,12 +4,14 @@ import com.example.marketrisk.model.dto.MarketDataRequest;
 import com.example.marketrisk.model.dto.MarketDataResponse;
 import com.example.marketrisk.service.MarketDataProducerService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/marketdata")
 @RequiredArgsConstructor
+@Tag(name = "Market Data Controller", description = "Endpoints for managing raw market data generation")
 public class MarketDataController {
 
     private final MarketDataProducerService producerService;
